@@ -1,0 +1,12 @@
+# Git ignore file
+.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+.env
+*.env.local
+*.env.development.local
+.venv
