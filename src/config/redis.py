@@ -1,43 +1,65 @@
 """
-Redis client to manage Redis operations.
-It includes methods to get and set data in Redis.
+Redis configuration module.
+This module is responsible for managing the Redis connection settings.
+It includes the Redis host, port, and database number.
+It also provides a function to create a Redis client instance.
+This module is intended to be used in conjunction with other modules 
+that require Redis functionality.
 """
-# Redis client to get and set data in Redis
+
+import redis
 class RedisClient:
     """
-    RedisClient class to manage Redis operations.
-    It includes methods to get and set data in Redis.
+    RedisClient class to manage the Redis connection settings.
+    It includes methods to create a Redis client instance.
     """
-    def __init__(self, logger, host='localhost', port=6379, db=0):
+    def __init__(self, logger, host='localhost', port=8084, db=0):
         self.logger = logger
         self.host = host
         self.port = port
         self.db = db
-        self.redis_client = None
-        print("Redis constructor initiated")
-        self.logger.info("Redis constructor initiated")
-        # Uncomment the following line to initialize the Redis client
-        #self.redis_client = redis.StrictRedis(host=host, port=port, db=db, decode_responses=True)
 
-    def get(self, key):
+    def create_client(self):
         """
-        Get value from Redis by key.
-        Parameters:
-            key (str): The key to retrieve the value for.
+        Create a Redis client instance.
         Returns:
-            str: The value associated with the key.
+            redis.StrictRedis: The Redis client instance.
         """
-        return self.redis_client.get(key)
+        self.logger.info(f"Creating Redis client with host: {self.host}, port: {self.port}, db: {self.db}")
+        try:
+            client = redis.StrictRedis(host=self.host, port=self.port, db=self.db, decode_responses=True)
+            client.ping()  # Test the connection
+            self.logger.info("Redis client created successfully.")
+        except redis.ConnectionError as e:
+            self.logger.error(f"Failed to connect to Redis: {e}")
+            raise
+        except Exception as e:
+            self.logger.error(f"An error occurred while creating Redis client: {e}")
+            raise
+        return client
 
-    def set(self, key, value, expiry=None):
+    def set_cache(self, key, value, expiry=None):
         """
-        Set value in Redis with an optional expiration time.
+        Set a cache value in Redis.
         Parameters:
-            key (str): The key to set the value for.
-            value (str): The value to set.
-            expiry (int): Optional expiration time in seconds.
+            key (str): The cache key.
+            value (str): The cache value.
+            expiry (int): The expiration time in seconds. Default is None (no expiration).
         """
+        client = self.create_client()
+        self.logger.info("Setting cache for key: Key, value, and expiry")
         if expiry:
-            self.redis_client.setex(key, expiry, value)
+            client.setex(key, expiry, value)
         else:
-            self.redis_client.set(key, value)
+            client.set(key, value)
+
+    def get_cache(self, key):
+        """
+        Get a cache value from Redis.
+        Parameters:
+            key (str): The cache key.
+        Returns:
+            str: The cache value.
+        """
+        client = self.create_client()
+        return client.get(key)

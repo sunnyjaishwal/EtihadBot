@@ -23,6 +23,7 @@ class AppStarter:
     def __init__(self, config):
         self.config = config
         self.logger = logging.getLogger(__name__)
+        self.redis_client = RedisClient(self.logger)
 
     def setup_logging(self):
         """
@@ -39,27 +40,24 @@ class AppStarter:
         )
         self.logger.info("Logging initialized. Logs will be written to the root file and console.")
 
-    def setup_database(self):
-        """
-        Set up the database connection.
-        """
+    def _setup_database(self):
         # Placeholder for database setup logic
         self.logger.info("Setting up database connection...")
         time.sleep(1)  # Simulate database setup time
         self.logger.info("Database connection established.")
 
-    def get_tokens(self):
-        """
-        Get tokens from the redis.
-        """
-        RedisClient(self.logger)
+    def _get_tokens(self):
+        # Placeholder for token retrieval logic
+        self.redis_client.set_cache("x-d-token", "get_x-d-token_from_redis", 3600)
         # Placeholder for token retrieval logic
         self.logger.info("Retrieving tokens...")
-        x_d_token = "get_x-d-token_from_redis" #
-        bearer_access_token = "get_bearer_access_token_from_redis"
-        self.logger.info("Tokens retrieved.")
-        self.logger.info(f"X-D-Token: {x_d_token}")
-        self.logger.info(f"Bearer Access Token: {bearer_access_token}")
+        print(self.redis_client.get_cache("x-d-token"))
+
+    def _get_proxy(self):
+        pass
+
+    def _get_fingerprint(self):
+        pass
 
     def start_bot(self):
         """
@@ -67,7 +65,9 @@ class AppStarter:
         """
         # Placeholder for server startup logic
         self.logger.info("Starting scraper...")
-        self.get_tokens()
+        self._get_tokens()
+        self._get_proxy()
+        self._get_fingerprint()
         time.sleep(1)  # Simulate server startup time
         self.logger.info("Scraper started.")
 
@@ -75,22 +75,22 @@ class AppStarter:
         """
         Run the application.
         """
-        self.setup_database()
+        self._setup_database()
         self.start_bot()
         self.logger.info("Application is running.")
 
 
 if __name__ == "__main__":
     configurations = {
-        "db_host": os.getenv("DB_HOST", "localhost"),
-        "db_port": os.getenv("DB_PORT", "5432"),
-        "db_user": os.getenv("DB_USER", "user"),
-        "db_password": os.getenv("DB_PASSWORD", "password"),
+        # "db_host": os.getenv("DB_HOST", "localhost"),
+        # "db_port": os.getenv("DB_PORT", "5432"),
+        # "db_user": os.getenv("DB_USER", "user"),
+        # "db_password": os.getenv("DB_PASSWORD", "password"),
         # Uncomment and configure the following keys as needed
-        # "db_name": os.getenv("DB_NAME", "database"),
-        # "redis_host": os.getenv("REDIS_HOST", "localhost"),
-        # "redis_port": os.getenv("REDIS_PORT", 6379),
-        # "redis_password": os.getenv("REDIS_PASSWORD", None),
+        "db_name": os.getenv("DB_NAME", "database"),
+        "redis_host": os.getenv("REDIS_HOST", "localhost"),
+        "redis_port": os.getenv("REDIS_PORT", "6379"),
+        "redis_password": os.getenv("REDIS_PASSWORD", None),
     }
 
     app_starter = AppStarter(configurations)
