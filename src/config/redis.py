@@ -25,7 +25,18 @@ class RedisClient:
         Returns:
             redis.StrictRedis: The Redis client instance.
         """
-        return redis.StrictRedis(host=self.host, port=self.port, db=self.db, decode_responses=True)
+        self.logger.info(f"Creating Redis client with host: {self.host}, port: {self.port}, db: {self.db}")
+        try:
+            client = redis.StrictRedis(host=self.host, port=self.port, db=self.db, decode_responses=True)
+            client.ping()  # Test the connection
+            self.logger.info("Redis client created successfully.")
+        except redis.ConnectionError as e:
+            self.logger.error(f"Failed to connect to Redis: {e}")
+            raise
+        except Exception as e:
+            self.logger.error(f"An error occurred while creating Redis client: {e}")
+            raise
+        return client
 
     def set_cache(self, key, value, expiry=None):
         """
@@ -36,6 +47,7 @@ class RedisClient:
             expiry (int): The expiration time in seconds. Default is None (no expiration).
         """
         client = self.create_client()
+        self.logger.info("Setting cache for key: Key, value, and expiry")
         if expiry:
             client.setex(key, expiry, value)
         else:
